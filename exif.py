@@ -11,9 +11,14 @@ def extract_exif(filename):
     properties = Quartz.ImageIO.CGImageSourceCopyPropertiesAtIndex(img_src, 0, None)
     return properties[Quartz.ImageIO.kCGImagePropertyExifDictionary]
 
+def process_file(filename):
+    absfilename = os.path.abspath(filename)
+    exif = extract_exif(absfilename)
+    print "%s\t%s" %(filename,exif[Quartz.ImageIO.kCGImagePropertyExifDateTimeOriginal])
+
 def main(args):
-    filename = os.path.abspath(args[1])
-    print extract_exif(filename)[Quartz.ImageIO.kCGImagePropertyExifDateTimeOriginal]
+    filename = args[1]
+    process_file(filename)
    
     #img_dest = Quartz.ImageIO.CGImageDestinationCreateWithURL(url, 'public.jpeg', 1, None)
     
