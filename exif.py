@@ -5,10 +5,11 @@ import logging
 import Quartz
 import CoreFoundation as CF
 import os, sys
+from datetime import datetime
 
 class ExifProcessor(object):
     """docstring for ExifProcessor"""
-    def __init__(self, verbose=0, outdir=None, dateformat='%%Y-%%m/%%Y-%%m-%%d %%H-%%M-%%S'):
+    def __init__(self, verbose=0, outdir=None, dateformat='%Y-%m/%Y-%m-%d %H-%M-%S'):
         super(ExifProcessor, self).__init__()
         self.verbose = verbose
         self.outdir = outdir
@@ -30,7 +31,15 @@ class ExifProcessor(object):
         exif = self.extract_exif(absfilename)
         date_from_exif = exif[Quartz.ImageIO.kCGImagePropertyExifDateTimeOriginal]
         logging.debug('process_file date_from_exif="%s"', date_from_exif)
-        print "%s\t%s" %(filename, date_from_exif)
+        dt = datetime.strptime(date_from_exif,"%Y:%m:%d %H:%M:%S")
+        if not self.outdir:
+            print "%s\t%s" %(filename, date_from_exif)
+        else:
+            p = filename.rfind(".")
+            ext = ""
+            if p != -1:
+                ext = filename[p:]
+            print "%s\t%s" %(filename, self.outdir+dt.strftime(self.dateformat)+ext)
 
     def process_files(self, files):
         logging.debug('process_files()')
@@ -43,10 +52,10 @@ def main(args):
     parser = argparse.ArgumentParser()
     parser.add_argument("filename", nargs='?',
                     help="name of file with photo, if empty then use stdin")
-    parser.add_argument("-d", "--outdir", action="count",
+    parser.add_argument("-d", "--outdir",
                     help='print converted name of input file in format outdir/DateTime.jpg - DateTime from --dateformat option')
-    parser.add_argument("-f", "--dateformat", action="store_true",
-                    help='format for --outdir option (default="%%Y-%%m/%%Y-%%m-%%d %%H-%%M-%%S"', default='%%Y-%%m/%%Y-%%m-%%d %%H-%%M-%%S')    
+    parser.add_argument("-f", "--dateformat",
+                    help='format for --outdir option (default="%%Y-%%m/%%Y-%%m-%%d %%H-%%M-%%S"', default='%Y-%m/%Y-%m-%d %H-%M-%S')    
     parser.add_argument("-v", "--verbose", action="count",
                     help="increase output verbosity")
     args = parser.parse_args()
