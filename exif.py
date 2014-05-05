@@ -20,7 +20,11 @@ class ExifProcessor(object):
         url = CF.CFURLCreateFromFileSystemRepresentation(None, filename, len(filename), False)      
         img_src = Quartz.ImageIO.CGImageSourceCreateWithURL(url, {})
         properties = Quartz.ImageIO.CGImageSourceCopyPropertiesAtIndex(img_src, 0, None)
-        result = properties[Quartz.ImageIO.kCGImagePropertyExifDictionary]
+        exif_name = Quartz.ImageIO.kCGImagePropertyExifDictionary
+        if not exif_name in properties:
+            logging.info('empty exif')
+            return None
+        result = properties[exif_name]
         if self.verbose > 1:
             logging.debug('exif_dump\n%s', result)
         return result
@@ -28,7 +32,12 @@ class ExifProcessor(object):
     def process_file(self, filename):
         logging.debug('process_file(filename="%s"', filename)
         absfilename = os.path.abspath(filename)
+
         exif = self.extract_exif(absfilename)
+        if exif is None:
+            logging.info('skip_file(filename="%s"', filename)
+            return
+
         date_from_exif = exif[Quartz.ImageIO.kCGImagePropertyExifDateTimeOriginal]
         logging.debug('process_file date_from_exif="%s"', date_from_exif)
         dt = datetime.strptime(date_from_exif,"%Y:%m:%d %H:%M:%S")
@@ -40,7 +49,7 @@ class ExifProcessor(object):
             p = filename.rfind(".")
             ext = ""
             if p != -1:
-                ext = filename[p:]
+                ext = filename[p:].lower()
             fname = self.generate_name(bname, ext)
             print "%s\t%s" %(filename.decode("utf-8").encode("utf-8"), fname)
 
