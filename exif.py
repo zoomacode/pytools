@@ -33,7 +33,7 @@ class ExifProcessor(object):
         logging.debug('process_file date_from_exif="%s"', date_from_exif)
         dt = datetime.strptime(date_from_exif,"%Y:%m:%d %H:%M:%S")
         if not self.outdir:
-            print "%s\t%s" % (filename.decode("utf-8"), date_from_exif)
+            print "%s\t%s" % (filename.decode("utf-8").encode("utf-8"), date_from_exif)
         else:
             bname = self.outdir+dt.strftime(self.dateformat)
 
@@ -42,7 +42,7 @@ class ExifProcessor(object):
             if p != -1:
                 ext = filename[p:]
             fname = self.generate_name(bname, ext)
-            print "%s\t%s" %(filename.decode("utf-8"), fname)
+            print "%s\t%s" %(filename.decode("utf-8").encode("utf-8"), fname)
 
     def process_files(self, files):
         logging.debug('process_files()')
