@@ -33,13 +33,16 @@ class ExifProcessor(object):
         logging.debug('process_file date_from_exif="%s"', date_from_exif)
         dt = datetime.strptime(date_from_exif,"%Y:%m:%d %H:%M:%S")
         if not self.outdir:
-            print "%s\t%s" %(filename, date_from_exif)
+            print "%s\t%s" % (filename.decode("utf-8"), date_from_exif)
         else:
+            bname = self.outdir+dt.strftime(self.dateformat)
+
             p = filename.rfind(".")
             ext = ""
             if p != -1:
                 ext = filename[p:]
-            print "%s\t%s" %(filename, self.outdir+dt.strftime(self.dateformat)+ext)
+            fname = self.generate_name(bname, ext)
+            print "%s\t%s" %(filename.decode("utf-8"), fname)
 
     def process_files(self, files):
         logging.debug('process_files()')
@@ -47,6 +50,18 @@ class ExifProcessor(object):
             v = v[:-1]
             if v:
                 self.process_file(v)
+
+    def generate_name(self, basename, ext):
+        name = basename + ext
+        if not os.path.exists(name):
+            return name
+        i = 1
+        while True:
+            name = "{0}({1}){2}".format(basename,str(i),ext)
+            if not os.path.exists(name):
+                return name
+            i += 1
+
 
 def main(args):
     parser = argparse.ArgumentParser()
