@@ -35,12 +35,22 @@ class ExifProcessor(object):
 
         exif = self.extract_exif(absfilename)
         if exif is None:
-            logging.info('skip_file(filename="%s"', filename)
+            logging.info('skip_file(filename="%s"', filename.decode("utf-8"))
             return
 
-        date_from_exif = exif[Quartz.ImageIO.kCGImagePropertyExifDateTimeOriginal]
-        logging.debug('process_file date_from_exif="%s"', date_from_exif)
+        date_name = Quartz.ImageIO.kCGImagePropertyExifDateTimeOriginal
+        if date_name not in exif:
+            logging.info('skip_file(filename="%s"', filename.decode("utf-8"))
+            return
+
+        date_from_exif = exif[date_name]
+        logging.debug('process_file date_from_exif="%s"', date_from_exif.decode("utf-8"))
+        if date_from_exif == "0000:00:00 00:00:00":
+            logging.info('skip_file(filename="%s", data="%s")', filename.decode("utf-8"), date_from_exif.decode("utf-8"))
+            return
+
         dt = datetime.strptime(date_from_exif,"%Y:%m:%d %H:%M:%S")
+        
         if not self.outdir:
             print "%s\t%s" % (filename.decode("utf-8").encode("utf-8"), date_from_exif)
         else:
